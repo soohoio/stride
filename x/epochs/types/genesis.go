@@ -19,7 +19,8 @@ var (
 
 // DefaultGenesis returns the default Capability genesis state
 // The hour epoch was not included in the mainnet genesis config,
-//  but has been included here for local testing
+//
+//	but has been included here for local testing
 func DefaultGenesis() *GenesisState {
 	epochs := []EpochInfo{
 		{
@@ -34,7 +35,7 @@ func DefaultGenesis() *GenesisState {
 		{
 			Identifier:              DAY_EPOCH,
 			StartTime:               time.Time{},
-			Duration:                time.Hour * 24,
+			Duration:                time.Second * 240,
 			CurrentEpoch:            0,
 			CurrentEpochStartHeight: 0,
 			CurrentEpochStartTime:   time.Time{},
@@ -43,7 +44,7 @@ func DefaultGenesis() *GenesisState {
 		{
 			Identifier:              STRIDE_EPOCH,
 			StartTime:               time.Time{},
-			Duration:                time.Hour * 6,
+			Duration:                time.Second * 120,
 			CurrentEpoch:            0,
 			CurrentEpochStartHeight: 0,
 			CurrentEpochStartTime:   time.Time{},
