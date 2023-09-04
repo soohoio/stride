@@ -15,7 +15,7 @@ STRIDE_LOGS=$LOGS/stride.log
 TX_LOGS=$DOCKERNET_HOME/logs/tx.log
 KEYS_LOGS=$DOCKERNET_HOME/logs/keys.log
 
-# List of hosts enabled
+# List of hosts enabled 
 HOST_CHAINS=() 
 
 # If no host zones are specified above:
@@ -33,10 +33,6 @@ if [[ "${ALL_HOST_CHAINS:-false}" == "true" ]]; then
 elif [[ "${#HOST_CHAINS[@]}" == "0" ]]; then 
   HOST_CHAINS=(GAIA)
 fi
-
-# Sets up upgrade if {UPGRADE_NAME} is non-empty
-UPGRADE_NAME=""
-UPGRADE_OLD_COMMIT_HASH=""
 
 # DENOMS
 STRD_DENOM="ustrd"
@@ -100,23 +96,29 @@ IBC_STARS_DENOM=$IBC_STARS_CHANNEL_3_DENOM
 # CHAIN PARAMS
 BLOCK_TIME='1s'
 STRIDE_HOUR_EPOCH_DURATION="90s"
-STRIDE_DAY_EPOCH_DURATION="100s"
-STRIDE_EPOCH_EPOCH_DURATION="40s"
+STRIDE_DAY_EPOCH_DURATION="140s"
+STRIDE_EPOCH_EPOCH_DURATION="35s"
 STRIDE_MINT_EPOCH_DURATION="20s"
 HOST_DAY_EPOCH_DURATION="60s"
 HOST_HOUR_EPOCH_DURATION="60s"
 HOST_WEEK_EPOCH_DURATION="60s"
 HOST_MINT_EPOCH_DURATION="60s"
-UNBONDING_TIME="120s"
+UNBONDING_TIME="240s"
 MAX_DEPOSIT_PERIOD="30s"
 VOTING_PERIOD="30s"
 INITIAL_ANNUAL_PROVISIONS="10000000000000.000000000000000000"
+
+# LSM Params
+LSM_VALIDATOR_BOND_FACTOR="250"
+LSM_GLOBAL_LIQUID_STAKING_CAP="0.25"
+LSM_VALIDATOR_LIQUID_STAKING_CAP="0.50"
 
 # Tokens are denominated in the macro-unit 
 # (e.g. 5000000STRD implies 5000000000000ustrd)
 VAL_TOKENS=5000000
 STAKE_TOKENS=5000
 ADMIN_TOKENS=1000
+USER_TOKENS=100
 
 # CHAIN MNEMONICS
 VAL_MNEMONIC_1="close soup mirror crew erode defy knock trigger gather eyebrow tent farm gym gloom base lemon sleep weekend rich forget diagram hurt prize fly"
@@ -132,6 +134,8 @@ VAL_MNEMONICS=(
     "$VAL_MNEMONIC_5"
 )
 REV_MNEMONIC="tonight bonus finish chaos orchard plastic view nurse salad regret pause awake link bacon process core talent whale million hope luggage sauce card weasel"
+USER_MNEMONIC="brief play describe burden half aim soccer carbon hope wait output play vacuum joke energy crucial output mimic cruise brother document rail anger leaf"
+USER_ACCT=user
 
 # STRIDE 
 STRIDE_CHAIN_ID=STRIDE
@@ -147,7 +151,7 @@ STRIDE_ADMIN_MNEMONIC="tone cause tribe this switch near host damage idle fragil
 STRIDE_FEE_ADDRESS=stride1czvrk3jkvtj8m27kqsqu2yrkhw3h3ykwj3rxh6
 
 # Binaries are contigent on whether we're doing an upgrade or not
-if [[ "$UPGRADE_NAME" == "" ]]; then 
+if [[ "${UPGRADE_NAME:-}" == "" ]]; then 
   STRIDE_BINARY="$DOCKERNET_HOME/../build/strided"
 else
   if [[ "${NEW_BINARY:-false}" == "false" ]]; then
@@ -238,13 +242,13 @@ EVMOS_RECEIVER_ADDRESS='evmos123z469cfejeusvk87ufrs5520wmdxmmlc7qzuw'
 EVMOS_MICRO_DENOM_UNITS="000000000000000000000000"
 
 # RELAYER
-RELAYER_CMD="$DOCKERNET_HOME/../build/relayer --home $STATE/relayer"
 RELAYER_GAIA_EXEC="$DOCKER_COMPOSE run --rm relayer-gaia"
+RELAYER_GAIA_ICS_EXEC="$DOCKER_COMPOSE run --rm relayer-gaia-ics"
 RELAYER_JUNO_EXEC="$DOCKER_COMPOSE run --rm relayer-juno"
 RELAYER_OSMO_EXEC="$DOCKER_COMPOSE run --rm relayer-osmo"
 RELAYER_STARS_EXEC="$DOCKER_COMPOSE run --rm relayer-stars"
-RELAYER_EVMOS_EXEC="$DOCKER_COMPOSE run --rm relayer-evmos"
 RELAYER_HOST_EXEC="$DOCKER_COMPOSE run --rm relayer-host"
+RELAYER_EVMOS_EXEC="$DOCKER_COMPOSE run --rm relayer-evmos"
 
 RELAYER_STRIDE_ACCT=rly1
 RELAYER_GAIA_ACCT=rly2
@@ -253,6 +257,8 @@ RELAYER_OSMO_ACCT=rly4
 RELAYER_STARS_ACCT=rly5
 RELAYER_HOST_ACCT=rly6
 RELAYER_EVMOS_ACCT=rly7
+RELAYER_STRIDE_ICS_ACCT=rly11
+RELAYER_GAIA_ICS_ACCT=rly12
 RELAYER_ACCTS=(
   $RELAYER_GAIA_ACCT 
   $RELAYER_JUNO_ACCT 
@@ -260,6 +266,7 @@ RELAYER_ACCTS=(
   $RELAYER_STARS_ACCT 
   $RELAYER_HOST_ACCT 
   $RELAYER_EVMOS_ACCT
+  $RELAYER_GAIA_ICS_ACCT
 )
 
 RELAYER_GAIA_MNEMONIC="fiction perfect rapid steel bundle giant blade grain eagle wing cannon fever must humble dance kitchen lazy episode museum faith off notable rate flavor"
@@ -267,6 +274,7 @@ RELAYER_JUNO_MNEMONIC="kiwi betray topple van vapor flag decorate cement crystal
 RELAYER_OSMO_MNEMONIC="unaware wine ramp february bring trust leaf beyond fever inside option dilemma save know captain endless salute radio humble chicken property culture foil taxi"
 RELAYER_STARS_MNEMONIC="deposit dawn erosion talent old broom flip recipe pill hammer animal hill nice ten target metal gas shoe visual nephew soda harbor child simple"
 RELAYER_HOST_MNEMONIC="renew umbrella teach spoon have razor knee sock divert inner nut between immense library inhale dog truly return run remain dune virus diamond clinic"
+RELAYER_GAIA_ICS_MNEMONIC="size chimney clog job robot thunder gaze vapor economy smooth kit denial alter merit produce front force eager outside mansion believe fan tonight detect"
 RELAYER_EVMOS_MNEMONIC="science depart where tell bus ski laptop follow child bronze rebel recall brief plug razor ship degree labor human series today embody fury harvest"
 RELAYER_MNEMONICS=(
   "$RELAYER_GAIA_MNEMONIC"
@@ -275,6 +283,7 @@ RELAYER_MNEMONICS=(
   "$RELAYER_STARS_MNEMONIC"
   "$RELAYER_HOST_MNEMONIC"
   "$RELAYER_EVMOS_MNEMONIC"
+  "$RELAYER_GAIA_ICS_MNEMONIC"
 )
 
 STRIDE_ADDRESS() { 
@@ -324,19 +333,44 @@ WAIT_FOR_STRING() {
   ( tail -f -n0 $1 & ) | grep -q "$2"
 }
 
+# Sleep until the balance has changed
+# Optionally provide a minimum amount it must change by (to ignore interest)
 WAIT_FOR_BALANCE_CHANGE() {
   chain=$1
   address=$2
   denom=$3
+  minimum_change=${4:-1} # defaults to 1
 
   max_blocks=30
 
   main_cmd=$(GET_VAR_VALUE ${chain}_MAIN_CMD)
-  initial_balance=$($main_cmd q bank balances $address --denom $denom | grep amount)
+  initial_balance=$($main_cmd q bank balances $address --denom $denom | grep amount | NUMBERS_ONLY)
   for i in $(seq $max_blocks); do
-    new_balance=$($main_cmd q bank balances $address --denom $denom | grep amount)
+    new_balance=$($main_cmd q bank balances $address --denom $denom | grep amount | NUMBERS_ONLY)
+    balance_change=$(echo "$new_balance - $initial_balance" | bc)
 
-    if [[ "$new_balance" != "$initial_balance" ]]; then
+    if [[ $(echo "$balance_change >= $minimum_change" | bc -l) == "1" ]]; then
+      break
+    fi
+
+    WAIT_FOR_BLOCK $STRIDE_LOGS 1
+  done
+}
+
+# Sleep until the total delegation amount has changed
+# Optionally provide a minimum amount it must change by  (to ignore interest)
+WAIT_FOR_DELEGATION_CHANGE() {
+  chain_id=$1
+  minimum_change=${2:-1} # defaults to 1
+
+  max_blocks=30
+
+  initial_delegation=$($STRIDE_MAIN_CMD q stakeibc show-host-zone $chain_id | grep "total_delegations" | NUMBERS_ONLY)
+  for i in $(seq $max_blocks); do
+    new_delegation=$($STRIDE_MAIN_CMD q stakeibc show-host-zone $chain_id | grep "total_delegations" | NUMBERS_ONLY)
+    delegation_change=$(echo "$new_delegation - $initial_delegation" | bc)
+
+    if [[ $(echo "$delegation_change >= $minimum_change" | bc -l) == "1" ]]; then
       break
     fi
 
@@ -349,16 +383,35 @@ GET_VAL_ADDR() {
   val_index=$2
 
   MAIN_CMD=$(GET_VAR_VALUE ${chain}_MAIN_CMD)
-  $MAIN_CMD q staking validators | grep ${chain}_${val_index} -A 5 | grep operator | awk '{print $2}'
+  $MAIN_CMD q staking validators | grep ${chain}_${val_index} -A 6 | grep operator | awk '{print $2}'
 }
 
 GET_ICA_ADDR() {
   chain_id="$1"
   ica_type="$2" #delegation, fee, redemption, or withdrawal
 
-  $STRIDE_MAIN_CMD q stakeibc show-host-zone $chain_id | grep ${ica_type}_account -A 1 | grep address | awk '{print $2}'
+  $STRIDE_MAIN_CMD q stakeibc show-host-zone $chain_id | grep ${ica_type}_ica_address | awk '{print $2}'
+}
+
+GET_IBC_DENOM() {
+  transfer_channel_id="$1"
+  base_denom="$2"
+
+  echo "ibc/$($STRIDE_MAIN_CMD q ibc-transfer denom-hash transfer/${transfer_channel_id}/${base_denom} | awk '{print $2}')"
 }
 
 TRIM_TX() {
   grep -E "code:|txhash:" | sed 's/^/  /'
+}
+
+NUMBERS_ONLY() {
+  tr -cd '[:digit:]'
+}
+
+GETBAL() {
+  head -n 1 | grep -o -E '[0-9]+' || "0"
+}
+
+GETSTAKE() {
+  tail -n 2 | head -n 1 | grep -o -E '[0-9]+' | head -n 1
 }

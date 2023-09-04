@@ -8,19 +8,21 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	epochtypes "github.com/Stride-Labs/stride/v9/x/epochs/types"
-	"github.com/Stride-Labs/stride/v9/x/stakeibc/types"
+	epochtypes "github.com/Stride-Labs/stride/v14/x/epochs/types"
+	"github.com/Stride-Labs/stride/v14/x/stakeibc/types"
 )
 
 // Exchanges a user's native tokens for stTokens using the current redemption rate
 // The native tokens must live on Stride with an IBC denomination before this function is called
 // The typical flow consists, first, of a transfer of native tokens from the host zone to Stride,
-//    and then the invocation of this LiquidStake function
+//
+//	and then the invocation of this LiquidStake function
 //
 // WARNING: This function is invoked from the begin/end blocker in a way that does not revert partial state when
-//    an error is thrown (i.e. the execution is non-atomic).
-//    As a result, it is important that the validation steps are positioned at the top of the function,
-//    and logic that creates state changes (e.g. bank sends, mint) appear towards the end of the function
+//
+//	an error is thrown (i.e. the execution is non-atomic).
+//	As a result, it is important that the validation steps are positioned at the top of the function,
+//	and logic that creates state changes (e.g. bank sends, mint) appear towards the end of the function
 func (k msgServer) LiquidStake(goCtx context.Context, msg *types.MsgLiquidStake) (*types.MsgLiquidStakeResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -40,7 +42,7 @@ func (k msgServer) LiquidStake(goCtx context.Context, msg *types.MsgLiquidStake)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "user's address is invalid")
 	}
-	hostZoneAddress, err := sdk.AccAddressFromBech32(hostZone.Address)
+	hostZoneDepositAddress, err := sdk.AccAddressFromBech32(hostZone.DepositAddress)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "host zone address is invalid")
 	}
@@ -82,7 +84,7 @@ func (k msgServer) LiquidStake(goCtx context.Context, msg *types.MsgLiquidStake)
 	}
 
 	// Transfer the native tokens from the user to module account
-	if err := k.bankKeeper.SendCoins(ctx, liquidStakerAddress, hostZoneAddress, sdk.NewCoins(nativeCoin)); err != nil {
+	if err := k.bankKeeper.SendCoins(ctx, liquidStakerAddress, hostZoneDepositAddress, sdk.NewCoins(nativeCoin)); err != nil {
 		return nil, errorsmod.Wrap(err, "failed to send tokens from Account to Module")
 	}
 
@@ -101,18 +103,7 @@ func (k msgServer) LiquidStake(goCtx context.Context, msg *types.MsgLiquidStake)
 	k.RecordsKeeper.SetDepositRecord(ctx, *depositRecord)
 
 	// Emit liquid stake event
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeLiquidStakeRequest,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyLiquidStaker, msg.Creator),
-			sdk.NewAttribute(types.AttributeKeyHostZone, hostZone.ChainId),
-			sdk.NewAttribute(types.AttributeKeyNativeBaseDenom, msg.HostDenom),
-			sdk.NewAttribute(types.AttributeKeyNativeIBCDenom, hostZone.IbcDenom),
-			sdk.NewAttribute(types.AttributeKeyNativeAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeyStTokenAmount, stAmount.String()),
-		),
-	)
+	EmitSuccessfulLiquidStakeEvent(ctx, msg, *hostZone, stAmount)
 
 	k.hooks.AfterLiquidStake(ctx, liquidStakerAddress)
 	return &types.MsgLiquidStakeResponse{}, nil

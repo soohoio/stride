@@ -1,13 +1,16 @@
 [submodule "deps/hermes"]
-	# Commit: fd92eb6d17342bc83003f2067d6a9cd8261f2884
+	# Commit: v1.5.1
 	path = deps/hermes
 	url = https://github.com/informalsystems/ibc-rs.git
+# TODO [LSM]: Revert to cosmos relayer once they've merged 
+# the fix for the unbonding time query
 [submodule "deps/relayer"]
-	# Commit: v2.3.1
+	# Branch: sam/lsm-poc
+	# Commit: 0136134766142f133f263f3bba72d7077e7bc2c1
 	path = deps/relayer
-	url = https://github.com/cosmos/relayer.git
+	url = https://github.com/Stride-Labs/relayer.git
 [submodule "deps/gaia"]
-	# Commit: v9.1.0
+	# Commit: v12.0.0-rc0
 	path = deps/gaia
 	url = https://github.com/cosmos/gaia.git
 [submodule "deps/juno"]
@@ -15,9 +18,9 @@
 	path = deps/juno
 	url = https://github.com/CosmosContracts/juno.git
 [submodule "deps/osmosis"]
-	# Commit: 08669da8509059980dc964976ee1ca60c84f5c8a
+	# Commit: v16.1.1-no-fees
 	path = deps/osmosis
-	url = https://github.com/osmosis-labs/osmosis.git
+	url = https://github.com/Stride-Labs/osmosis.git
 [submodule "deps/stargaze"]
 	# Commit: v9.0.1
 	path = deps/stargaze
